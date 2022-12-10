@@ -8,15 +8,15 @@ import re
 import pdftotext
 import os
 import parser
-from pymongo import MongoClient
+import mongo_client
 
-client=MongoClient('localhost',27017)
-mondo_db=client['resume']
+
+
 
 
 app = FastAPI()
 
-api_key="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"
+api_key="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"
 
 origins = [
     "http://localhost.tiangolo.com",
@@ -91,8 +91,8 @@ def updatprofile(request: schemas.User, db: Session = Depends(get_db)):
 
 
 # route to upload a pdf
-@app.post("/uploadfile{email}")
-async def create_upload_file(email,file: UploadFile = File(...)):
+@app.post("/uploadfile")
+async def create_upload_file(file: UploadFile = File(...)):
     # do something with the request
     file_name = file.filename
     file_contents = await file.read()
@@ -100,9 +100,9 @@ async def create_upload_file(email,file: UploadFile = File(...)):
         buffer.write(file_contents)
     # remove the file
     r=parser.ResumeParser(api_key)
-    result=r.query_resume(pdf_path=file_name,email=email)
+    result=r.query_resume(pdf_path=file_name,email="test")
     # add the result in mongodb
-    # monod_db.resume.insert_one(result)
+    mongo_client.add_resume(result)
 
     os.remove(file_name)
    
